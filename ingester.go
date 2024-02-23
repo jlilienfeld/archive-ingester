@@ -12,7 +12,7 @@ import (
 )
 
 type Ingester interface {
-	Ingest(contentType string, dstPath string, buf *bufio.Reader) (int, error)
+	Ingest(contentType string, dstPath string, r io.Reader) (int, error)
 }
 
 func GetIngesterFor(fileType FileType) Ingester {
@@ -49,16 +49,16 @@ func storeFile(contentType string, dst string, fileName string, buf *bufio.Reade
 	return http.StatusOK, nil
 }
 
-func IngestFile(dstPath string, fileName string, buf *bufio.Reader) (int, error) {
-	contentType, fileType := PeekFileType(fileName, buf)
+func IngestFile(dstPath string, fileName string, r *bufio.Reader) (int, error) {
+	contentType, fileType := PeekFileType(fileName, r)
 	if fileType.IsUnknown() {
-		return storeFile(contentType, dstPath, fileName, buf)
+		return storeFile(contentType, dstPath, fileName, r)
 	}
 
 	fileIngester := GetIngesterFor(fileType)
 	if fileIngester == nil {
-		return storeFile(contentType, dstPath, fileName, buf)
+		return storeFile(contentType, dstPath, fileName, r)
 	}
 
-	return fileIngester.Ingest(contentType, fmt.Sprintf("%s/%s/", dstPath, fileName), buf)
+	return fileIngester.Ingest(contentType, fmt.Sprintf("%s/%s/", dstPath, fileName), r)
 }
