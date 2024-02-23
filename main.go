@@ -55,6 +55,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	viper.SetDefault("repopath", DefaultRepoPath)
+	viper.AutomaticEnv()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", indexHandler)

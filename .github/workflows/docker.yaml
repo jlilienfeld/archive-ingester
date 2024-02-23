@@ -1,0 +1,52 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Builds GO application and create container image
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  VERSION: 0.0.1
+
+jobs:
+  build-docker-image:
+    permissions:
+      contents: read
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: 'arm64,arm'
+      - name: downcase REPO
+        run: |
+          echo "REPO=${IMAGE_NAME,,}" >> ${GITHUB_ENV}
+          echo "REPO_NAME=${{ github.event.repository.name }}" >> ${GITHUB_ENV}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          platforms: "linux/amd64,linux/arm64"
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.REPO }}:${{ env.VERSION }} , ${{ env.REGISTRY }}/${{ env.REPO }}:${{ github.sha }} , ${{ env.REGISTRY }}/${{ env.REPO }}:latest
