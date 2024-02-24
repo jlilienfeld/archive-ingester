@@ -61,6 +61,8 @@ func main() {
 	mux.HandleFunc("/", indexHandler)
 	mux.HandleFunc("/archive", uploadHandler)
 
+	log.Print("Using ", viper.GetString("repopath"), " as destination for ingested files.")
+
 	if err := http.ListenAndServe(":8080", mux); err != nil {
 		log.Fatal(err)
 	}
