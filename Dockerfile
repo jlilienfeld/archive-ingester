@@ -19,7 +19,7 @@ RUN set -x && apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -
 COPY --from=builder /app/archive-ingester /app/archive-ingester
 COPY assets/index.html /app/assets/index.html
 
-ENV repopath=/data
+ENV REPOPATH=/data
 
 WORKDIR /app
 
