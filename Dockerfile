@@ -21,6 +21,8 @@ COPY assets/index.html /app/assets/index.html
 
 ENV repopath=/data
 
+WORKDIR /app
+
 # Run the web service on container startup.
 CMD ["/app/archive-ingester"]
 
