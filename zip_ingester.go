@@ -17,8 +17,7 @@ func receiveFile(dst string, file io.Reader, wg *sync.WaitGroup, pipeWriter *io.
 
 	_, err := io.Copy(pipeWriter, file)
 	if err != nil {
-		log.Printf("Error while receiving mime file: %s", err.Error())
-		//http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Print("Left receiveFile, dst:", dst, " Reason: ", err.Error())
 		return
 	}
 	log.Print("Left receiveFile, dst:", dst)
@@ -33,7 +32,8 @@ func unzipFile(dst string, wg *sync.WaitGroup, pipeReader *io.PipeReader) {
 		e, err := zr.GetNextEntry()
 		if err != nil {
 			if err != io.EOF {
-				log.Fatal(err)
+				log.Print(err)
+				break
 			}
 			log.Print(err.Error())
 			break
@@ -48,9 +48,12 @@ func unzipFile(dst string, wg *sync.WaitGroup, pipeReader *io.PipeReader) {
 		if err != nil {
 			log.Fatalf("unable to open zip file: %s", err)
 		}
-		log.Print("Zip uncompressed entry size: ", e.UncompressedSize64)
+
+		log.Print("Processing Zip entry ", e.Name, " uncompressed size: ", e.UncompressedSize64)
+
 		buf := bufio.NewReaderSize(data, 4<<20)
 		IngestFile(dst, e.Name, buf)
+
 		data.Close()
 	}
 	log.Print("Left unzipFile, dst: ", dst)
